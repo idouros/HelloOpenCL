@@ -1,5 +1,4 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
-#define MAX_KERNEL_LINES 100
 #define MAX_VECTOR_LENGTH 500
 
 #include <iostream>
@@ -105,23 +104,14 @@ int main()
     queue = clCreateCommandQueue(context, device_id, 0, &err);
 
     // Populate the source buffer from the cl file
-    std::ifstream kernelFile("vecAdd_2.cl");
-    std::string line;
-    std::vector<std::string> kernelSource = {};
-    while (std::getline(kernelFile, line))
-    {
-        kernelSource.push_back(line);
-    }
-    const size_t n_lines = kernelSource.size();
-    const char* kernelSourceCode[MAX_KERNEL_LINES]; // MAX_KERNEL_LINES
-    for (size_t j = 0; j < n_lines; j++)
-    {
-        //kernelSource[j].append("\n");
-        kernelSourceCode[j] = (j < n_lines) ? kernelSource[j].c_str() : "\0";
-    }
+    std::ifstream kernelFile("vecAdd.cl");
+    std::ostringstream sstr;
+    sstr << kernelFile.rdbuf();
+    std::string kernelSourceString = sstr.str();
+    const char* kernelSourceCode = kernelSourceString.c_str();
 
     // Create the compute program from the source buffer
-    program = clCreateProgramWithSource(context, 1, kernelSourceCode, NULL, &err);
+    program = clCreateProgramWithSource(context, 1, (const char**) & kernelSourceCode, NULL, &err);
 
     // Build the program executable 
     std::cout << "Building the program executable...";
